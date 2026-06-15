@@ -56,4 +56,16 @@ def getMoonPhaseName(phase_value:float) ->str:
         return "Waning Cresent"
     
 
+@app.get("/moon")
+def get_moonINFO():
+    phaseValue = moon.phase(date.today())
+
+    return{
+        "date" : str(date.today()),
+        "moon_phase": getMoonPhaseName(phaseValue),
+        "phase_value" : round(phaseValue,2)
+    }
+
+
+
 
