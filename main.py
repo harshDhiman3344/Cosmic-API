@@ -3,6 +3,10 @@ from astral import LocationInfo
 from astral.sun import sun
 from datetime import datetime,date
 from astral import moon
+import requests
+import math
+
+
 
 app = FastAPI(
     title="Cosmic Companion API",
@@ -68,4 +72,45 @@ def get_moonINFO():
 
 
 
+
+
+
+
+def haversine_distance(lat1, lon1, lat2, lon2):
+    R = 6371  # Earth's radius in km
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+    
+    a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
+    return 2 * R * math.asin(math.sqrt(a))
+
+
+
+
+
+@app.get("/iss")
+def get_iss_info(lat: float, lon: float):
+    response = requests.get("http://api.open-notify.org/iss-now.json")
+    data = response.json()
+    
+    iss_lat = float(data["iss_position"]["latitude"])
+    iss_lon = float(data["iss_position"]["longitude"])
+    
+    distance = haversine_distance(lat, lon, iss_lat, iss_lon)
+    
+    # ISS orbits at ~400km, visible roughly within ~2300km ground distance
+    is_visible_range = distance < 2300
+    
+    return {
+        "iss_position": {
+            "latitude": iss_lat,
+            "longitude": iss_lon
+        },
+        "your_location": {"latitude": lat, "longitude": lon},
+        "distance_km": round(distance, 1),
+        "iss_in_range": is_visible_range
+
+    
+    }
 
