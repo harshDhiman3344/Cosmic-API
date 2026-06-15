@@ -36,3 +36,24 @@ def get_sun_times(lat:float,lon:float):
 
 
 
+def getMoonPhaseName(phase_value:float) ->str:
+    if phase_value <1.75 or phase_value >= 26.25:
+        return "New Moon"
+    
+    elif phase_value <5.25:
+        return "Waxing Cresent"
+    elif phase_value <8.75:
+        return "First Quarter"
+    elif phase_value<12.25:
+        return "Waxing Gibbous"
+    elif phase_value <15.75:
+        return "Full Moon"
+    elif phase_value < 19.25:
+        return "Waning Gibbous"
+    elif phase_value <22.75:
+        return "Last Quarter"
+    else:
+        return "Waning Cresent"
+    
+
+
