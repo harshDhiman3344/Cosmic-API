@@ -5,8 +5,8 @@ from datetime import datetime,date
 from astral import moon
 import requests
 import math
-
-
+import ephem
+from datetime import datetime
 
 app = FastAPI(
     title="Cosmic Companion API",
@@ -111,3 +111,46 @@ def get_iss_info(lat: float, lon: float):
         "distance_km": round(distance, 1),
         "iss_in_range": is_visible_range}
 
+
+
+@app.get("/planets")
+def get_visible_planets(lat:float,lon:float):
+    observer = ephem.Observer()
+    observer.lat = str(lat)
+    observer.lon = str(lon)
+    observer.date = datetime.utcnow()
+
+    planets = {
+        "Mercury": ephem.Mercury(),
+        "Venus": ephem.Venus(),
+        "Mars": ephem.Mars(),
+        "Jupiter": ephem.Jupiter(),
+        "Saturn": ephem.Saturn(),
+        "Uranus": ephem. Uranus(),
+        "Neptune": ephem.Neptune()
+        }
+    
+    visible = []
+    all_planets = {}
+
+
+    for name, body in planets.items():
+        body.compute(observer)
+        altitude_deg = float(body.alt)*180/math.pi
+
+        all_planets[name] ={
+            "altitide_deg": round(altitude_deg,2),
+            "magnitude": round(float(body.mag),2),
+            "above_horizon": altitude_deg > 0
+        }
+
+        if altitude_deg > 0:
+            visible.append(name)
+        
+
+    return{
+        "your_location": {"latitude":lat,"longitude":lon},
+        "datetime_utc": str(observer.date),
+        "visible_planets": visible,
+        "details": all_planets
+    }
