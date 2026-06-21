@@ -109,8 +109,5 @@ def get_iss_info(lat: float, lon: float):
         },
         "your_location": {"latitude": lat, "longitude": lon},
         "distance_km": round(distance, 1),
-        "iss_in_range": is_visible_range
-
-    
-    }
+        "iss_in_range": is_visible_range}
 
