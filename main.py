@@ -7,6 +7,7 @@ import requests
 import math
 import ephem
 from datetime import datetime
+from meteor_showers import METEOR_SHOWERS
 
 app = FastAPI(
     title="Cosmic Companion API",
@@ -59,6 +60,20 @@ def getMoonPhaseName(phase_value:float) ->str:
     else:
         return "Waning Cresent"
     
+def is_shower_active(start_str, end_str, today):
+    def parse_md(s):
+        m, d = map(int, s.split("-"))
+        return (m, d)
+    
+    start = parse_md(start_str)
+    end = parse_md(end_str)
+    current = (today.month, today.day)
+    
+    if start <= end:
+        return start <= current <= end
+    else:  # wraps around new year
+        return current >= start or current <= end
+
 
 @app.get("/moon")
 def get_moonINFO():
@@ -155,3 +170,44 @@ def get_visible_planets(lat:float,lon:float):
         "details": all_planets
     }
   
+
+
+
+@app.get("/meteor-showers")
+def get_meteor_showers():
+    today = date.today()
+
+    active = []
+    upcoming = []
+
+    for shower in METEOR_SHOWERS:
+        is_active = is_shower_active(shower["start"],shower["end"],today)
+
+        peak_month, peak_day = map(int,shower["peak"].split("-"))
+        days_to_peak = (date(today.year, peak_month, peak_day)-today).days
+        if days_to_peak<0:
+            days_to_peak+=365
+
+        entry = {
+            "name": shower["name"],
+            "peak_date": shower["peak"],
+            "active_window": f"{shower['start']} to {shower['end']}",
+            "peak_rate_per_hour": shower["rate"],
+            "days_to_peak": days_to_peak,
+            "description": shower["description"],
+            "status": "ACTIVE" if is_active else "UPCOMING"
+        }
+
+        if is_active:
+            active.append(entry)
+        else:
+            upcoming.append(entry)
+    
+    # sort upcoming by days to peak
+    upcoming.sort(key=lambda x: x["days_to_peak"])
+    
+    return {
+        "date": str(today),
+        "active_showers": active,
+        "next_3_upcoming": upcoming[:3]
+    }
