@@ -154,3 +154,4 @@ def get_visible_planets(lat:float,lon:float):
         "visible_planets": visible,
         "details": all_planets
     }
+  
