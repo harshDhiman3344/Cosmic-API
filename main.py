@@ -211,3 +211,43 @@ def get_meteor_showers():
         "active_showers": active,
         "next_3_upcoming": upcoming[:3]
     }
+
+
+
+@app.get("/eclipses")
+def get_eclipses(type: str = None):
+    response = requests.get(
+        "https://ssd-api.jpl.nasa.gov/api/eclipse.api",
+        params={"iso": "1"}
+    )
+    data = response.json()
+    
+    today = date.today()
+    upcoming = []
+    
+    for eclipse in data.get("data", []):
+        eclipse_date = date.fromisoformat(eclipse["date"][:10])
+        days_away = (eclipse_date - today).days
+        
+        if days_away >= 0:
+            entry = {
+                "type": eclipse.get("type", "Unknown"),
+                "date": eclipse["date"][:10],
+                "days_away": days_away,
+                "duration_minutes": eclipse.get("duration"),
+                "visibility": eclipse.get("region", "See NASA for details")
+            }
+            upcoming.append(entry)
+    
+    if type:
+        upcoming = [e for e in upcoming if type.lower() in e["type"].lower()]
+    
+    upcoming.sort(key=lambda x: x["days_away"])
+    
+    return {
+        "date": str(today),
+        "filter": type or "all",
+        "source": "NASA JPL Eclipse API",
+        "upcoming_eclipses": upcoming[:10],
+        "total": len(upcoming)
+    }

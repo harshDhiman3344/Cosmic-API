@@ -8,3 +8,4 @@ METEOR_SHOWERS = [
     {"name": "Geminids",        "peak": "12-14", "start": "12-04", "end": "12-20", "rate": 150, "description": "The strongest annual shower. Unusual — from asteroid 3200 Phaethon."},
     {"name": "Ursids",          "peak": "12-22", "start": "12-17", "end": "12-26", "rate": 10,  "description": "Debris from Comet 8P/Tuttle."},
 ]
+
